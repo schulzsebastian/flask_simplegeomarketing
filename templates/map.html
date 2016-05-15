@@ -66,8 +66,10 @@
         url:'../static/data/kody_pocztowe.geojson',
         dataType:'json',
         success: function(response){
+          if (codeLayer){alertify.error('Zresetowano mapę!')}
           codeLayer = L.geoJson(response, {style:style}).addTo(map);
           map.fitBounds(codeLayer.getBounds());
+          $("#input").val('');
         }
       });
     }
@@ -89,14 +91,16 @@
       });
       codeLayer.setStyle(style)
       codeLayer.addTo(map)
+      alertify.success('Załadowano plik '+fileName)
     }
     // Obsługa arkuszy kalkulacyjnych XLSX/ODS
+    var fileName = ''
     function handleFile(e) {
       var files = e.target.files;
       var i,f;
       for (i = 0, f = files[i]; i != files.length; ++i) {
         var reader = new FileReader();
-        var name = f.name;
+        fileName = f.name;
         reader.onload = function(e) {
           var data = e.target.result;
           var workbook = XLSX.read(data, {type: 'binary'});
