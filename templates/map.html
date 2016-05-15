@@ -79,12 +79,12 @@
         for (i in clients){
           if(layer.feature.properties.kod == clients[i].kod){
             layer.feature.properties.val = clients[i].val
-            var popupContent = "<p>Kod pocztowy: "+layer.feature.properties.kod+"<br>Liczba klientów: "+layer.feature.properties.val+"</p";
-            if(layer.feature.properties && layer.feature.properties.popupContent){
-              popupContent += layer.feature.properties.popupContent;
-            }
-            layer.bindPopup(popupContent);
           }
+          var popupContent = "<p>Kod pocztowy: "+layer.feature.properties.kod+"<br>Liczba klientów: "+layer.feature.properties.val+"</p";
+          if(layer.feature.properties && layer.feature.properties.popupContent){
+            popupContent += layer.feature.properties.popupContent;
+          }
+          layer.bindPopup(popupContent);
         }
       });
       codeLayer.setStyle(style)
