@@ -13,6 +13,10 @@
         min-height: 180px;
         width: 100%;
     }
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+  }
 </style>
 <div id="map"></div>
 <script>
@@ -22,27 +26,27 @@
     {attribution: '&copy; <a href="http://osm.org/copyright" title="OpenStreetMap" target="_blank">OpenStreetMap</a>'})
     .addTo(map);
     // Modal z instrukcją
-    var options = {'anchor':[50,950], 'size':[300,400]}
-    var content = "<h3>Mapa kodów pocztowych dla Poznania</h3>\
-    <p>Kliknij przycisk żeby załadować testowy plik<p>\
-    <button onclick='loadData()'>Załaduj dane clients.json</button>\
-    <p>Kliknij przycisk żeby załadować swój plik<p>\
-    <p><input type=\"file\" name=\"excel\" id=\"input\" /></p>\
-    <p>Kliknij przycisk żeby zresetować mapę<p>\
-    <button onclick='loadGeoJSON()'>Zresetuj mapę</button>"
-    var dialog = L.control.dialog(options).setContent(content).addTo(map);
+    $.ajax({
+      type:"GET",
+      url:'../static/data/modal.html',
+      dataType:'html',
+      success: function(content){
+        var options = {'anchor':[30,950], 'size':[300,500]}
+        var dialog = L.control.dialog(options).setContent(content).addTo(map);
+        // Stworzenie relacji funkcji handleFile z inputem
+        var input = document.getElementById('input');
+        input.addEventListener('change', handleFile, false)
+      }
+    })
     // Ustalenie kursora
     $('.leaflet-container').css('cursor','crosshair');
     // Style warstwy
     function getColor(d){
-			return d > 1000 ? '#800026' :
-			       d > 500  ? '#BD0026' :
-			       d > 200  ? '#E31A1C' :
-			       d > 100  ? '#FC4E2A' :
-			       d > 50   ? '#FD8D3C' :
-			       d > 20   ? '#FEB24C' :
-			       d > 0   ? '#FED976' :
-			                  '#FFFFFF';
+			return d > 50 ? '#E70815' :
+			       d > 30 ? '#E74F14' :
+			       d > 10 ? '#E9AD14' :
+			       d > 0  ? '#EAF514' :
+			                '#FFFFFF';
 		}
 		function style(feature){
 			return {
@@ -53,40 +57,25 @@
 				fillColor: getColor(feature.properties.val)
 			};
 		}
-    // Pobranie AJAXem warstwy kodów pocztowych
-    var geojsonlayer = null;
-    function loadGeoJSON(){
-      if(geojsonlayer){map.removeLayer(geojsonlayer)}
+    // Pobranie AJAXem warstwy kody_pocztowe.geojson
+    var codeLayer = null;
+    function getCodeMap(){
+      if(codeLayer){map.removeLayer(codeLayer)}
       $.ajax({
         type:"GET",
         url:'../static/data/kody_pocztowe.geojson',
         dataType:'json',
         success: function(response){
-          geojsonlayer = L.geoJson(response, {style:style}).addTo(map);
-          map.fitBounds(geojsonlayer.getBounds());
+          codeLayer = L.geoJson(response, {style:style}).addTo(map);
+          map.fitBounds(codeLayer.getBounds());
         }
       });
     }
-    loadGeoJSON()
-    // Pobranie AJAXem danych o klientach
-    function loadData(){
-      $.ajax({
-        type:"GET",
-        url:'../static/data/clients.json',
-        dataType:'json',
-        success: function(response){
-          var clients = [];
-          for (i in response.dane){
-            clients.push(response.dane[i])
-          }
-          updateMap(clients)
-        }
-      })
-    };
-    // Funkcja ładowania danych na mapę
+    getCodeMap()
+    // Funkcja ładowania danych do warstwy kody_pocztowe.geojson
     function updateMap(clients){
-      map.removeLayer(geojsonlayer)
-      geojsonlayer.eachLayer(function (layer) {
+      map.removeLayer(codeLayer)
+      codeLayer.eachLayer(function (layer) {
         for (i in clients){
           if(layer.feature.properties.kod == clients[i].kod){
             layer.feature.properties.val = clients[i].val
@@ -98,11 +87,10 @@
           }
         }
       });
-      geojsonlayer.setStyle(style)
-      geojsonlayer.addTo(map)
+      codeLayer.setStyle(style)
+      codeLayer.addTo(map)
     }
-    // Obsługa XLSX/ODS
-    var input = document.getElementById('input');
+    // Obsługa arkuszy kalkulacyjnych XLSX/ODS
     function handleFile(e) {
       var files = e.target.files;
       var i,f;
@@ -135,8 +123,6 @@
         };
         reader.readAsBinaryString(f);
       }
-    }
-    input.addEventListener('change', handleFile, false);
-
+    };
 </script>
 {% endblock %}
