@@ -105,7 +105,6 @@
           var data = e.target.result;
           var workbook = XLSX.read(data, {type: 'binary'});
           var sheet_name_list = workbook.SheetNames;
-          var result = [];
           var obj = {'dane':[]};
           sheet_name_list.forEach(function(y) {
             var worksheet = workbook.Sheets[y];
